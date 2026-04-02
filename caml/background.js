@@ -114,7 +114,32 @@ function replacePatterns(text, data) {
     return text.replace(/{{selection}}/g, data?.selection !== null ? `${data.selection}` : "");
 }
 
-function createLink(typeLink = "markdown") {
+function replaceDelimiter(text, delimiterStart, delimiterStop, newDelimiter = "-") {
+    if (!delimiterStart) {
+        return text
+    }
+    if (delimiterStop) {
+        text = text.replace(new RegExp(` ${delimiterStart}`, 'g'), ` ${newDelimiter} `);
+        text = text.replace(new RegExp(`${delimiterStop} `, 'g'), ` ${newDelimiter} `);
+        text = text.replace(new RegExp(delimiterStop, 'g'), "");
+    }
+    return text.replace(new RegExp(delimiterStart, 'g'), "");
+}
+
+function sanitizeForTypeLink(text, typeOfLink = "markdown") {
+    if (typeOfLink === "html") {
+        text = replaceDelimiter(text, "\\>");
+        return replaceDelimiter(text, "\\<");
+    }
+    text = replaceDelimiter(text, "\\[", "\\]");
+    if (typeOfLink === "jira") {
+        return replaceDelimiter(text, "\\|");
+    }
+    // else markdown
+    return text;
+}
+
+function createLink(typeOfLink = "markdown") {
     browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
         const tab = tabs[0];
         if (!tab) {
@@ -149,11 +174,11 @@ function createLink(typeLink = "markdown") {
                     break;
                 }
 
-                title = replacePatterns(title, data);
+                title = sanitizeForTypeLink(replacePatterns(title, data), typeOfLink);
                 let formattedLink = `[${title}](${url.toString()})`;
-                if (typeLink === "jira") {
+                if (typeOfLink === "jira") {
                     formattedLink = `[${title}|${url.toString()}]`;
-                } else if (typeLink === "html") {
+                } else if (typeOfLink === "html") {
                     formattedLink = `<a href="${url.toString()}" title="${title}" target="_new">${title}</a>`;
                 }
                 navigator.clipboard.writeText(formattedLink).then(() => {
