@@ -73,10 +73,10 @@
         },
         "copy-rich-text-link": {
             "suggested_key": {
-                "default": "Ctrl+Alt+Y",
-                "windows": "Ctrl+Alt+Y",
-                "mac": "Command+Alt+Y",
-                "linux": "Ctrl+Alt+Y"
+                "default": "Ctrl+Alt+K",
+                "windows": "Ctrl+Alt+K",
+                "mac": "MacCtrl+Alt+K",
+                "linux": "Ctrl+Alt+K"
             },
             "description": "Copy the current tab's URL and title as rich text link."
         }

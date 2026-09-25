@@ -83,7 +83,7 @@ With our previous example, it will result as follow:
 <a href="https://bugzilla.kernel.org/show_bug.cgi?id=220522" title="#220522" target="_new">#220522</a>
 ```
 
-- For rich text: choose "Copy as Rich Text Link" in the contextual menu or use default keyboard shortcut `Ctrl+Alt+Y`. Pasting it in a rich text editor (Google Docs, Slack, Gmail...) shows a clickable [#220522](https://bugzilla.kernel.org/show_bug.cgi?id=220522), the Markdown link is pasted in plain text editors.
+- For rich text: choose "Copy as Rich Text Link" in the contextual menu or use default keyboard shortcut `Ctrl+Alt+K`. Pasting it in a rich text editor (Google Docs, Slack, Gmail...) shows a clickable [#220522](https://bugzilla.kernel.org/show_bug.cgi?id=220522), the Markdown link is pasted in plain text editors.
 
 #### Text Selection
 
