@@ -4,7 +4,7 @@
   <img src="icons/icon.png" alt="copy-as-markdown-link logo" width="128" height="128">
 </p>
 
-Firefox Extension to copy the current tab's URL and title as a Markdown/Jira/HTML link to the clipboard.
+Firefox Extension to copy the current tab's URL and title as a Markdown/Jira/HTML/rich text link to the clipboard.
 
 <p align="center">
     <a href="https://addons.mozilla.org/firefox/addon/copy-as-markdown-link/">
@@ -63,7 +63,7 @@ If you need additional informations that are not part of the original title but 
 
 ### Secondary Actions
 
-You can also copy links to Jira and HTML format similarly to Markdown syntax by using the contextual menu by right-clicking the icon or by using the extension's keyboard shortcut.
+You can also copy links to Jira, HTML and rich text format similarly to Markdown syntax by using the contextual menu by right-clicking the icon or by using the extension's keyboard shortcut.
 
 ![Right-Click Extension Icon](screenshots/background-secondary.png)
 
@@ -82,6 +82,8 @@ With our previous example, it will result as follow:
 ```html
 <a href="https://bugzilla.kernel.org/show_bug.cgi?id=220522" title="#220522" target="_new">#220522</a>
 ```
+
+- For rich text: choose "Copy as Rich Text Link" in the contextual menu or use default keyboard shortcut `Ctrl+Alt+Y`. Pasting it in a rich text editor (Google Docs, Slack, Gmail...) shows a clickable [#220522](https://bugzilla.kernel.org/show_bug.cgi?id=220522), the Markdown link is pasted in plain text editors.
 
 #### Text Selection
 
