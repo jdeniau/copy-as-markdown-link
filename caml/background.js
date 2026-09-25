@@ -27,6 +27,12 @@ browser.contextMenus.create({
     contexts: ["action"]
 });
 
+browser.contextMenus.create({
+    id: "copy-rich-text-link-context-menu",
+    title: "Copy as Rich Text Link",
+    contexts: ["action"]
+});
+
 function rgbToHex(color) {
     let r = null, g = null, b = null;
     if (color !== null && color.startsWith("#")) {
@@ -139,6 +145,26 @@ function sanitizeForTypeLink(text, typeOfLink = "markdown") {
     return text;
 }
 
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+function writeToClipboard(text, html = null) {
+    if (!html) {
+        return navigator.clipboard.writeText(text);
+    }
+    return navigator.clipboard.write([
+        new ClipboardItem({
+            "text/html": new Blob([html], { type: "text/html" }),
+            "text/plain": new Blob([text], { type: "text/plain" })
+        })
+    ]);
+}
+
 function createLink(typeOfLink = "markdown") {
     browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
         const tab = tabs[0];
@@ -174,15 +200,19 @@ function createLink(typeOfLink = "markdown") {
                     break;
                 }
 
-                title = sanitizeForTypeLink(replacePatterns(title, data), typeOfLink);
+                const rawTitle = replacePatterns(title, data);
+                title = sanitizeForTypeLink(rawTitle, typeOfLink);
                 let formattedLink = `[${title}](${url.toString()})`;
+                let richLink = null;
                 if (typeOfLink === "jira") {
                     formattedLink = `[${title}|${url.toString()}]`;
                 } else if (typeOfLink === "html") {
                     formattedLink = `<a href="${url.toString()}" title="${title}" target="_new">${title}</a>`;
+                } else if (typeOfLink === "rich") {
+                    richLink = `<a href="${escapeHtml(url.toString())}">${escapeHtml(rawTitle)}</a>`;
                 }
-                navigator.clipboard.writeText(formattedLink).then(() => {
-                    console.log("Copied to clipboard:", formattedLink);
+                writeToClipboard(formattedLink, richLink).then(() => {
+                    console.log("Copied to clipboard:", richLink || formattedLink);
                     setIcon("active");
                     setTimeout(() => {
                         setIcon();
@@ -222,6 +252,18 @@ browser.commands.onCommand.addListener(function (command) {
 browser.contextMenus.onClicked.addListener(function (info) {
     if (info.menuItemId === "copy-html-link-context-menu") {
         createLink("html");
+    }
+});
+
+browser.commands.onCommand.addListener(function (command) {
+    if (command === "copy-rich-text-link") {
+        createLink("rich");
+    }
+});
+
+browser.contextMenus.onClicked.addListener(function (info) {
+    if (info.menuItemId === "copy-rich-text-link-context-menu") {
+        createLink("rich");
     }
 });
 
