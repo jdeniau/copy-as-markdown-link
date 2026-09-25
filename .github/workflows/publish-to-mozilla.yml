@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check Initiating User
-        if: github.actor != 'JayBeeDe'
+        if: github.actor != 'jdeniau'
         run: |
           echo "::error title=Unauthorized Access::User ${GITHUB_ACTOR} is not authorized."
           exit 1
