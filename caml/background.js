@@ -153,6 +153,10 @@ function escapeHtml(text) {
         .replace(/"/g, "&quot;");
 }
 
+function withPrefix(link, prefix) {
+    return prefix ? `${prefix} ${link}` : link;
+}
+
 function writeToClipboard(text, html = null) {
     if (!html) {
         return navigator.clipboard.writeText(text);
@@ -186,6 +190,7 @@ function createLink(typeOfLink = "markdown") {
 
             browser.storage.sync.get("rules").then(result => {
                 const rules = result.rules || [];
+                let prefix = "";
                 for (const rule of rules) {
 
                     regexUrl = new RegExp(rule.url);
@@ -197,6 +202,7 @@ function createLink(typeOfLink = "markdown") {
                     if (!regexSearch.test(title)) continue;
 
                     title = title.replace(regexSearch, rule.replace);
+                    prefix = replacePatterns(rule.prefix || "", data);
                     break;
                 }
 
@@ -209,8 +215,9 @@ function createLink(typeOfLink = "markdown") {
                 } else if (typeOfLink === "html") {
                     formattedLink = `<a href="${url.toString()}" title="${title}" target="_new">${title}</a>`;
                 } else if (typeOfLink === "rich") {
-                    richLink = `<a href="${escapeHtml(url.toString())}">${escapeHtml(rawTitle)}</a>`;
+                    richLink = withPrefix(`<a href="${escapeHtml(url.toString())}">${escapeHtml(rawTitle)}</a>`, escapeHtml(prefix));
                 }
+                formattedLink = withPrefix(formattedLink, prefix);
                 writeToClipboard(formattedLink, richLink).then(() => {
                     console.log("Copied to clipboard:", richLink || formattedLink);
                     setIcon("active");

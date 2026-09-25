@@ -36,13 +36,14 @@ function addRule() {
     reindexRules(); // Update indices after adding
 }
 
-function createRuleElement(ruleData = { pattern: "{{title}}", url: "", search: "", replace: "" }) {
+function createRuleElement(ruleData = { pattern: "{{title}}", url: "", search: "", replace: "", prefix: "" }) {
     const ruleNode = ruleTemplate.content.cloneNode(true);
     const ruleDiv = ruleNode.querySelector(".rule-row");
     ruleNode.querySelector(".pattern").value = ruleData.pattern;
     ruleNode.querySelector(".url").value = ruleData.url;
     ruleNode.querySelector(".search").value = ruleData.search;
     ruleNode.querySelector(".replace").value = ruleData.replace;
+    ruleNode.querySelector(".prefix").value = ruleData.prefix || "";
     ruleNode.querySelector(".remove-rule-button").addEventListener("click", () => removeRule(ruleDiv));
     return ruleNode;
 }
@@ -76,8 +77,9 @@ function saveOptions() {
         const url = ruleDiv.querySelector(".url").value;
         const search = ruleDiv.querySelector(".search").value;
         const replace = ruleDiv.querySelector(".replace").value;
+        const prefix = ruleDiv.querySelector(".prefix").value;
 
-        rules.push({ pattern: pattern, url: url, search: search, replace: replace });
+        rules.push({ pattern: pattern, url: url, search: search, replace: replace, prefix: prefix });
     });
 
     browser.storage.sync.set({

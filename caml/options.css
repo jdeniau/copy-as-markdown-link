@@ -23,17 +23,16 @@ button {
     margin: 18px;
 }
 
-.pattern,
-.url,
-.search,
-.replace {
+.rule-row input {
+    box-sizing: border-box;
+    min-width: 0;
     background-color: #464347;
     border: none;
     padding: 10px 16px;
     color: #ffffff;
     font-size: 18px;
     padding: 10px 16px;
-    width: 27%;
+    width: 20%;
     border-radius: 5px;
     margin: 10px;
 }
