@@ -1,14 +1,16 @@
-# copy-as-markdown-link
+# Copy Link As
 
 <p align="center">
-  <img src="icons/icon.png" alt="copy-as-markdown-link logo" width="128" height="128">
+  <img src="icons/icon.png" alt="Copy Link As logo" width="128" height="128">
 </p>
 
 Firefox Extension to copy the current tab's URL and title as a Markdown/Jira/HTML/rich text link to the clipboard.
 
+It is a fork of [Copy as Markdown Link](https://github.com/JayBeeDe/firefox_extensions/tree/main/caml) by JayBeeDe.
+
 <p align="center">
-    <a href="https://addons.mozilla.org/firefox/addon/copy-as-markdown-link/">
-        <img src="../firefox.png" alt="Get the Firefox Add-On" title="Get 'Copy as Markdown Link' Add-on" width="200px">
+    <a href="https://addons.mozilla.org/firefox/addon/copy-link-as/">
+        <img src="../firefox.png" alt="Get the Firefox Add-On" title="Get 'Copy Link As' Add-on" width="200px">
     </a>
 </p>
 

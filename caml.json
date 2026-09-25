@@ -3,21 +3,21 @@
 		"tabs"
 	],
 	"description": {
-		"en-US": "Firefox Extension to copy the current tab's URL and title as a Markdown/Jira/HTML link to the clipboard.\nFor example, suppose your active tab is <https://bugzilla.kernel.org/show_bug.cgi?id=220522>.\nTrigger the extension action either by clicking the icon in the Firefox toolbar or by using the extension shortcut configured near \"Copy the current tab's URL and title as Markdown link\" (default is `Ctrl+Alt+M`).\nInteresting is the extension options page where you can create some rules to transform the title..."
+		"en-US": "Firefox Extension to copy the current tab's URL and title as a Markdown/Jira/HTML/rich text link to the clipboard.\nFor example, suppose your active tab is <https://bugzilla.kernel.org/show_bug.cgi?id=220522>.\nTrigger the extension action either by clicking the icon in the Firefox toolbar or by using the extension shortcut configured near \"Copy the current tab's URL and title as Markdown link\" (default is `Ctrl+Alt+M`).\nInteresting is the extension options page where you can create some rules to transform the title..."
 	},
 	"homepage": {
-		"en-US": "https://github.com/JayBeeDe/firefox_extensions/blob/main/caml/README.md"
+		"en-US": "https://github.com/jdeniau/copy-as-markdown-link/blob/jdeniau/release/caml/README.md"
 	},
 	"name": {
-		"en-US": "Copy as Markdown Link"
+		"en-US": "Copy Link As"
 	},
 	"requires_payment": false,
-	"slug": "copy-as-markdown-link",
+	"slug": "copy-link-as",
 	"summary": {
-		"en-US": "Copies the current tab's URL and title as a Markdown/Jira/HTML link to the clipboard."
+		"en-US": "Copies the current tab's URL and title as a Markdown/Jira/HTML/rich text link to the clipboard."
 	},
 	"support_email": {
-		"en-US": "dev@delon.cloud"
+		"en-US": "julien@deniau.me"
 	},
 	"version": {
 		"license": "GPL-3.0-only"
