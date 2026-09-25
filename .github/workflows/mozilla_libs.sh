@@ -85,7 +85,7 @@ function build() {
 
 function prepare() {
 	git tag
-	last_tag_name="$(git tag | grep -P "^${EXTENSION_SHORT}_v*" 2>/dev/null | tail -n -2 | head -n 1)"
+	last_tag_name="$(git tag | { grep -P "^${EXTENSION_SHORT}_v*" 2>/dev/null || true; } | tail -n -2 | head -n 1)"
 	if [ -n "$last_tag_name" ]; then
 		echo "last_tag_name was $last_tag_name"
 		_export RELEASE_NOTES="$EXTENSION_VERSION ($(date +%Y-%m-%d)): $(git log --pretty=format:"%s" "${last_tag_name}..HEAD" | awk -v component="$EXTENSION_SHORT" '$0 ~ component {sub(/^[^:]+:\s*/, ""); print}' | sed -rz "s:\n:, :g" | sed -r "s:, $::")"
@@ -93,7 +93,7 @@ function prepare() {
 		echo "$RELEASE_NOTES"
 	fi
 
-	if [ -n "$RELEASE_NOTES" ]; then
+	if [ -n "${RELEASE_NOTES:-}" ]; then
 		mv "${GIT_ROOT_PATH}/${EXTENSION_SHORT}.json" "${GIT_ROOT_PATH}/${EXTENSION_SHORT}.tmp.json"
 		jq --arg release_notes "$RELEASE_NOTES" '.version.release_notes = { "en-US": $release_notes }' "${GIT_ROOT_PATH}/${EXTENSION_SHORT}.tmp.json" > "${GIT_ROOT_PATH}/${EXTENSION_SHORT}.json"
 		rm -f "${GIT_ROOT_PATH}/${EXTENSION_SHORT}.tmp.json"
