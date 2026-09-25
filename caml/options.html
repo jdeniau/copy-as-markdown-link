@@ -20,7 +20,10 @@
             In case the information you want is missing from the original title, you can change the default "Input Pattern" containing the title (default value is <code>{{title}}</code>) to additional data such as the url and the selected text.
         </p>
         <p>
-            For "Input Pattern" and "Title Replacement Output Pattern" values, you  can use pattern variables such as:
+            Optionally, "Link Prefix" is added before the link (e.g. a Slack emoji like <code>:github:</code>).
+        </p>
+        <p>
+            For "Input Pattern", "Title Replacement Output Pattern" and "Link Prefix" values, you  can use pattern variables such as:
             <code>
                 {{title}}
                 {{url}}
@@ -33,6 +36,7 @@
             <span>Input Pattern</span>
             <span>Title Match Regexp</span>
             <span>Title Replacement Output Pattern</span>
+            <span>Link Prefix</span>
         </div>
 
         <div id="rules-container">
@@ -57,6 +61,7 @@
             <input placeholder="Input Pattern" class="pattern" />
             <input placeholder="Title Match Regexp" class="search" />
             <input placeholder="Title Replacement Output Pattern" class="replace" />
+            <input placeholder="Link Prefix" class="prefix" />
             <span class="remove-rule-button" title="Remove Rule">✗</span>
         </div>
     </template>

@@ -139,6 +139,10 @@ function sanitizeForTypeLink(text, typeOfLink = "markdown") {
     return text;
 }
 
+function withPrefix(link, prefix) {
+    return prefix ? `${prefix} ${link}` : link;
+}
+
 function createLink(typeOfLink = "markdown") {
     browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
         const tab = tabs[0];
@@ -160,6 +164,7 @@ function createLink(typeOfLink = "markdown") {
 
             browser.storage.sync.get("rules").then(result => {
                 const rules = result.rules || [];
+                let prefix = "";
                 for (const rule of rules) {
 
                     regexUrl = new RegExp(rule.url);
@@ -171,6 +176,7 @@ function createLink(typeOfLink = "markdown") {
                     if (!regexSearch.test(title)) continue;
 
                     title = title.replace(regexSearch, rule.replace);
+                    prefix = replacePatterns(rule.prefix || "", data);
                     break;
                 }
 
@@ -181,6 +187,7 @@ function createLink(typeOfLink = "markdown") {
                 } else if (typeOfLink === "html") {
                     formattedLink = `<a href="${url.toString()}" title="${title}" target="_new">${title}</a>`;
                 }
+                formattedLink = withPrefix(formattedLink, prefix);
                 navigator.clipboard.writeText(formattedLink).then(() => {
                     console.log("Copied to clipboard:", formattedLink);
                     setIcon("active");
