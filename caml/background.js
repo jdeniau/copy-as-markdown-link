@@ -18,6 +18,13 @@ const ICONS = {
     }
 }
 
+const LINK_CONTEXT_MENUS = {
+    "copy-link-markdown-context-menu": { type: "markdown", title: "Markdown Link" },
+    "copy-link-jira-context-menu": { type: "jira", title: "Jira Link" },
+    "copy-link-html-context-menu": { type: "html", title: "HTML Link" },
+    "copy-link-rich-text-context-menu": { type: "rich", title: "Rich Text Link" }
+};
+
 // The background is not persistent: remove menus before re-creating them to avoid duplicate ids
 browser.contextMenus.removeAll().then(() => {
     browser.contextMenus.create({
@@ -37,6 +44,21 @@ browser.contextMenus.removeAll().then(() => {
         title: "Copy as Rich Text Link",
         contexts: ["action"]
     });
+
+    browser.contextMenus.create({
+        id: "copy-link-context-menu",
+        title: "Copy Link As",
+        contexts: ["link"]
+    });
+
+    for (const [id, menu] of Object.entries(LINK_CONTEXT_MENUS)) {
+        browser.contextMenus.create({
+            id: id,
+            parentId: "copy-link-context-menu",
+            title: menu.title,
+            contexts: ["link"]
+        });
+    }
 });
 
 function rgbToHex(color) {
@@ -175,6 +197,50 @@ function writeToClipboard(text, html = null) {
     ]);
 }
 
+function copyLink(typeOfLink, data, url) {
+    browser.storage.sync.get("rules").then(result => {
+        const rules = result.rules || [];
+        let title = data.title;
+        let prefix = "";
+        for (const rule of rules) {
+
+            const regexUrl = new RegExp(rule.url);
+            if (!regexUrl.test(url.toString())) continue;
+
+            title = replacePatterns(rule.pattern, data);
+
+            const regexSearch = new RegExp(rule.search);
+            if (!regexSearch.test(title)) continue;
+
+            title = title.replace(regexSearch, rule.replace);
+            prefix = replacePatterns(rule.prefix || "", data);
+            break;
+        }
+
+        const rawTitle = replacePatterns(title, data);
+        title = sanitizeForTypeLink(rawTitle, typeOfLink);
+        let formattedLink = `[${title}](${url.toString()})`;
+        let richLink = null;
+        if (typeOfLink === "jira") {
+            formattedLink = `[${title}|${url.toString()}]`;
+        } else if (typeOfLink === "html") {
+            formattedLink = `<a href="${url.toString()}" title="${title}" target="_new">${title}</a>`;
+        } else if (typeOfLink === "rich") {
+            richLink = withPrefix(`<a href="${escapeHtml(url.toString())}">${escapeHtml(rawTitle)}</a>`, escapeHtml(prefix));
+        }
+        formattedLink = withPrefix(formattedLink, prefix);
+        writeToClipboard(formattedLink, richLink).then(() => {
+            console.log("Copied to clipboard:", richLink || formattedLink);
+            setIcon("active");
+            setTimeout(() => {
+                setIcon();
+            }, 2000);
+        }).catch(err => {
+            console.error("Failed to copy:", err);
+        });
+    });
+}
+
 function createLink(typeOfLink = "markdown") {
     browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
         const tab = tabs[0];
@@ -183,59 +249,53 @@ function createLink(typeOfLink = "markdown") {
             return;
         }
         getSelectedTextAsync().then(result => {
-            let title = tab.title;
             const url = new URL(tab.url);
-            let data = {
-                title: title,
+            const data = {
+                title: tab.title,
                 url: url.toString(),
                 selection: result,
             };
             if (result) {
                 url.hash = `:~:text=${encodeURIComponent(result)}`;
             }
-
-            browser.storage.sync.get("rules").then(result => {
-                const rules = result.rules || [];
-                let prefix = "";
-                for (const rule of rules) {
-
-                    regexUrl = new RegExp(rule.url);
-                    if (!regexUrl.test(url.toString())) continue;
-
-                    title = replacePatterns(rule.pattern, data);
-
-                    regexSearch = new RegExp(rule.search);
-                    if (!regexSearch.test(title)) continue;
-
-                    title = title.replace(regexSearch, rule.replace);
-                    prefix = replacePatterns(rule.prefix || "", data);
-                    break;
-                }
-
-                const rawTitle = replacePatterns(title, data);
-                title = sanitizeForTypeLink(rawTitle, typeOfLink);
-                let formattedLink = `[${title}](${url.toString()})`;
-                let richLink = null;
-                if (typeOfLink === "jira") {
-                    formattedLink = `[${title}|${url.toString()}]`;
-                } else if (typeOfLink === "html") {
-                    formattedLink = `<a href="${url.toString()}" title="${title}" target="_new">${title}</a>`;
-                } else if (typeOfLink === "rich") {
-                    richLink = withPrefix(`<a href="${escapeHtml(url.toString())}">${escapeHtml(rawTitle)}</a>`, escapeHtml(prefix));
-                }
-                formattedLink = withPrefix(formattedLink, prefix);
-                writeToClipboard(formattedLink, richLink).then(() => {
-                    console.log("Copied to clipboard:", richLink || formattedLink);
-                    setIcon("active");
-                    setTimeout(() => {
-                        setIcon();
-                    }, 2000);
-                }).catch(err => {
-                    console.error("Failed to copy:", err);
-                });
-            });
+            copyLink(typeOfLink, data, url);
         });
     });
+}
+
+// Chrome does not provide the link text in the context menu info: read it from the page
+async function getLinkTextAsync(info, tab) {
+    if (info.linkText !== undefined) {
+        return info.linkText;
+    }
+    try {
+        const result = await browser.scripting.executeScript({
+            target: {
+                tabId: tab.id,
+                frameIds: [info.frameId || 0]
+            },
+            func: linkUrl => {
+                const link = Array.from(document.querySelectorAll("a[href]")).find(a => a.href === linkUrl);
+                return link ? link.innerText : null;
+            },
+            args: [info.linkUrl]
+        });
+        return result?.[0]?.result || null;
+    } catch (error) {
+        console.error("Error getting link text:", error);
+        return null;
+    }
+}
+
+async function createLinkFromAnchor(typeOfLink, info, tab) {
+    const url = new URL(info.linkUrl);
+    const text = (await getLinkTextAsync(info, tab) || "").trim();
+    const data = {
+        title: text || url.toString(),
+        url: url.toString(),
+        selection: null,
+    };
+    copyLink(typeOfLink, data, url);
 }
 
 browser.commands.onCommand.addListener(function (command) {
@@ -277,6 +337,13 @@ browser.commands.onCommand.addListener(function (command) {
 browser.contextMenus.onClicked.addListener(function (info) {
     if (info.menuItemId === "copy-rich-text-link-context-menu") {
         createLink("rich");
+    }
+});
+
+browser.contextMenus.onClicked.addListener(function (info, tab) {
+    const menu = LINK_CONTEXT_MENUS[info.menuItemId];
+    if (menu) {
+        createLinkFromAnchor(menu.type, info, tab);
     }
 });
 

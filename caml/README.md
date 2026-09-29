@@ -101,3 +101,15 @@ Example with markdown:
 [220522 – iwlwifi: Wi-Fi 6 AX201 160MHz missing ucode firmware files](https://bugzilla.kernel.org/show_bug.cgi?id=220522#:~:text=iwlwifi-bz-b0-hr-b0-96.ucode)
 
 To do that, select the text and trigger the extension.
+
+### Copy a Link From the Page
+
+Right-click on any link in a page and choose "Copy Link As" > "Markdown Link", "Jira Link", "HTML Link" or "Rich Text Link".
+
+The link text is used as `{{title}}` and the link `href` as `{{url}}`: rules are matched against the link `href` and applied the same way as for the current tab (`{{selection}}` is always empty).
+
+For example, right-clicking on a link `<a href="https://bugzilla.kernel.org/show_bug.cgi?id=220522">220522 – iwlwifi: Wi-Fi 6 AX201 160MHz missing ucode firmware files</a>` with the rule above copies:
+
+```markdown
+[#220522](https://bugzilla.kernel.org/show_bug.cgi?id=220522)
+```
