@@ -113,3 +113,7 @@ For example, right-clicking on a link `<a href="https://bugzilla.kernel.org/show
 ```markdown
 [#220522](https://bugzilla.kernel.org/show_bug.cgi?id=220522)
 ```
+
+### Context Menus
+
+All context menu items (on the extension icon and on links) are displayed by default. You can choose which ones are displayed in the "Context Menus" section of the extension preferences page, then click "Save Options". If no link item is enabled, the "Copy Link As" menu is not displayed at all.

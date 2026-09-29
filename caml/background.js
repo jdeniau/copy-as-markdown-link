@@ -25,39 +25,53 @@ const LINK_CONTEXT_MENUS = {
     "copy-link-rich-text-context-menu": { type: "rich", title: "Rich Text Link" }
 };
 
-// The background is not persistent: remove menus before re-creating them to avoid duplicate ids
-browser.contextMenus.removeAll().then(() => {
-    browser.contextMenus.create({
-        id: "copy-jira-link-context-menu",
-        title: "Copy as Jira Link",
-        contexts: ["action"]
-    });
+const ACTION_CONTEXT_MENUS = {
+    "copy-jira-link-context-menu": { title: "Copy as Jira Link" },
+    "copy-html-link-context-menu": { title: "Copy as HTML Link" },
+    "copy-rich-text-link-context-menu": { title: "Copy as Rich Text Link" }
+};
 
-    browser.contextMenus.create({
-        id: "copy-html-link-context-menu",
-        title: "Copy as HTML Link",
-        contexts: ["action"]
-    });
+// Menus are enabled unless explicitly disabled in the options (`contextMenus` storage key)
+async function createContextMenus() {
+    // The background is not persistent: remove menus before re-creating them to avoid duplicate ids
+    await browser.contextMenus.removeAll();
+    const { contextMenus = {} } = await browser.storage.sync.get("contextMenus");
+    const isEnabled = id => contextMenus[id] !== false;
 
-    browser.contextMenus.create({
-        id: "copy-rich-text-link-context-menu",
-        title: "Copy as Rich Text Link",
-        contexts: ["action"]
-    });
+    for (const [id, menu] of Object.entries(ACTION_CONTEXT_MENUS)) {
+        if (!isEnabled(id)) continue;
+        browser.contextMenus.create({
+            id: id,
+            title: menu.title,
+            contexts: ["action"]
+        });
+    }
 
+    const linkMenus = Object.entries(LINK_CONTEXT_MENUS).filter(([id]) => isEnabled(id));
+    if (linkMenus.length === 0) {
+        return;
+    }
     browser.contextMenus.create({
         id: "copy-link-context-menu",
         title: "Copy Link As",
         contexts: ["link"]
     });
-
-    for (const [id, menu] of Object.entries(LINK_CONTEXT_MENUS)) {
+    for (const [id, menu] of linkMenus) {
         browser.contextMenus.create({
             id: id,
             parentId: "copy-link-context-menu",
             title: menu.title,
             contexts: ["link"]
         });
+    }
+}
+
+// Queue rebuilds so that concurrent calls do not create duplicate ids
+let contextMenusUpdate = createContextMenus();
+
+browser.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === "sync" && changes.contextMenus) {
+        contextMenusUpdate = contextMenusUpdate.catch(() => {}).then(createContextMenus);
     }
 });
 
