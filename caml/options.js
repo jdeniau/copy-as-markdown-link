@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+// Chrome only exposes the `chrome` namespace (promise based in MV3)
+globalThis.browser ??= globalThis.chrome;
+
 const extensionName = browser.runtime.getManifest().name;
 const exportFileName = "export-" + replaceAll(extensionName, " ", "-").toLowerCase() + ".json";
 

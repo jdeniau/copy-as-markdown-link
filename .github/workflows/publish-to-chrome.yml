@@ -1,0 +1,48 @@
+---
+name: Build and publish chrome extension
+on:
+  push:
+    tags:
+      - "caml_v*"
+jobs:
+  publish-chrome-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Initiating User
+        if: github.actor != 'jdeniau'
+        run: |
+          echo "::error title=Unauthorized Access::User ${GITHUB_ACTOR} is not authorized."
+          exit 1
+      - name: Install packages
+        run: sudo apt-get install -y curl git jq openssl zip
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check tag
+        run: |
+          set -euo pipefail
+          source "${GITHUB_WORKSPACE}/.github/workflows/mozilla_libs.sh"
+          source "${GITHUB_WORKSPACE}/.github/workflows/chrome_libs.sh"
+          checkTag "${GITHUB_REF##*/}"
+          checkChromeItem
+      - name: Build
+        run: |
+          set -euo pipefail
+          source "${GITHUB_WORKSPACE}/.github/workflows/mozilla_libs.sh"
+          source "${GITHUB_WORKSPACE}/.github/workflows/chrome_libs.sh"
+          buildChrome
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.EXTENSION_SHORT }}-chrome-${{ env.EXTENSION_VERSION }}
+          path: ${{ env.CHROME_PACKAGE_PATH }}
+      - name: Publish
+        env:
+          CHROME_WEBSTORE_SERVICE_ACCOUNT_KEY: ${{ secrets.CHROME_WEBSTORE_SERVICE_ACCOUNT_KEY }}
+          CHROME_WEBSTORE_PUBLISHER_ID: ${{ secrets.CHROME_WEBSTORE_PUBLISHER_ID }}
+        run: |
+          set -euo pipefail
+          source "${GITHUB_WORKSPACE}/.github/workflows/mozilla_libs.sh"
+          source "${GITHUB_WORKSPACE}/.github/workflows/chrome_libs.sh"
+          publishChrome

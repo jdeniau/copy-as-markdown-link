@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+// Chrome only exposes the `chrome` namespace (promise based in MV3)
+globalThis.browser ??= globalThis.chrome;
+
 let isDarkThemeStatus = false;
 let textSelection = null;
 const darknessThreshold = 128;
@@ -15,22 +18,25 @@ const ICONS = {
     }
 }
 
-browser.contextMenus.create({
-    id: "copy-jira-link-context-menu",
-    title: "Copy as Jira Link",
-    contexts: ["action"]
-});
+// The background is not persistent: remove menus before re-creating them to avoid duplicate ids
+browser.contextMenus.removeAll().then(() => {
+    browser.contextMenus.create({
+        id: "copy-jira-link-context-menu",
+        title: "Copy as Jira Link",
+        contexts: ["action"]
+    });
 
-browser.contextMenus.create({
-    id: "copy-html-link-context-menu",
-    title: "Copy as HTML Link",
-    contexts: ["action"]
-});
+    browser.contextMenus.create({
+        id: "copy-html-link-context-menu",
+        title: "Copy as HTML Link",
+        contexts: ["action"]
+    });
 
-browser.contextMenus.create({
-    id: "copy-rich-text-link-context-menu",
-    title: "Copy as Rich Text Link",
-    contexts: ["action"]
+    browser.contextMenus.create({
+        id: "copy-rich-text-link-context-menu",
+        title: "Copy as Rich Text Link",
+        contexts: ["action"]
+    });
 });
 
 function rgbToHex(color) {
@@ -185,7 +191,7 @@ function createLink(typeOfLink = "markdown") {
                 selection: result,
             };
             if (result) {
-                url.hash = `:~:text=${window.encodeURIComponent(result)}`;
+                url.hash = `:~:text=${encodeURIComponent(result)}`;
             }
 
             browser.storage.sync.get("rules").then(result => {
@@ -276,10 +282,13 @@ browser.contextMenus.onClicked.addListener(function (info) {
 
 browser.action.onClicked.addListener(createLink);
 
-browser.theme.onUpdated.addListener(isDarkTheme);
+// Chrome has no theme API nor matchMedia in its service worker, see chrome/caml/service-worker.js
+if (browser.theme) {
+    browser.theme.onUpdated.addListener(isDarkTheme);
 
-window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", isDarkTheme);
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", isDarkTheme);
 
-(async () => {
-    await isDarkTheme();
-})();
+    (async () => {
+        await isDarkTheme();
+    })();
+}
