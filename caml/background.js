@@ -7,14 +7,17 @@ let isDarkThemeStatus = false;
 let textSelection = null;
 const darknessThreshold = 128;
 
+// Generated from icons/src/*.svg by scripts/build-icons.sh
+const toolbarIcon = name => ({ 16: `icons/${name}-16.png`, 32: `icons/${name}-32.png` });
+
 const ICONS = {
     dark: {
-        active: "icons/dark-512-ok.png",
-        inactive: "icons/dark-512.png"
+        active: toolbarIcon("toolbar-dark-copied"),
+        inactive: toolbarIcon("toolbar-dark")
     },
     light: {
-        active: "icons/light-512-ok.png",
-        inactive: "icons/light-512.png"
+        active: toolbarIcon("toolbar-light-copied"),
+        inactive: toolbarIcon("toolbar-light")
     }
 }
 

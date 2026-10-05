@@ -43,6 +43,14 @@ Open `chrome://extensions`, enable the "Developer mode", click "Load unpacked" a
 
 After a change, run the build script again and click the reload icon of the extension.
 
+### Icons
+
+The icons of Copy Link As are drawn in SVG in [caml/icons/src/](./caml/icons/src/). Chrome does not accept SVG icons, so the PNG files are generated from them and committed (requires ImageMagick with librsvg):
+
+```sh
+scripts/build-icons.sh caml
+```
+
 ## Publishing
 
 Pushing a signed tag like `caml_v1.2.3` publishes the version `1.2.3` to the Firefox Add-ons (`publish-to-mozilla.yml`) and to the Chrome Web Store (`publish-to-chrome.yml`, for the extensions having a `chrome/<extension>.json` file).
