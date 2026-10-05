@@ -14,6 +14,10 @@ It is a fork of [Copy as Markdown Link](https://github.com/JayBeeDe/firefox_exte
     </a>
 </p>
 
+<p align="center">
+    <a href="https://chromewebstore.google.com/detail/onicfbcjjkagepepfmneheodahkckioj">Get 'Copy Link As' on the Chrome Web Store</a>
+</p>
+
 ## How it works
 
 ### Simple Use

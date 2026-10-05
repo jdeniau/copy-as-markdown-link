@@ -7,7 +7,7 @@ This repo contains some Firefox extensions & themes:
 |Type|Name|Description|
 |:---:|:---:|:---:|
 |Theme|[Custom Accentuation Color Dark High Contrast](./cacdh/)|Dark High Contrast Theme with customizable accentuation color.|
-|Extension|[Copy Link As](./caml/)|Copies the current tab's URL and title as a Markdown/Jira/HTML/rich text link to the clipboard. Also available for Chrome.|
+|Extension|[Copy Link As](./caml/)|Copies the current tab's URL and title as a Markdown/Jira/HTML/rich text link to the clipboard. Also available on the [Chrome Web Store](https://chromewebstore.google.com/detail/onicfbcjjkagepepfmneheodahkckioj).|
 
 ## Development
 
