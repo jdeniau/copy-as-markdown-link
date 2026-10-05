@@ -8,6 +8,9 @@ Firefox (and Chrome) Extension to copy the current tab's URL and title as a Mark
 
 It is a fork of [Copy as Markdown Link](https://github.com/JayBeeDe/firefox_extensions/tree/main/caml) by JayBeeDe.
 
+Copyright (C) 2025-2026 JayBeeDe, 2026 Julien Deniau (modified version).
+Distributed under the [GNU General Public License v3.0](LICENSE): the packages published on the Firefox Add-ons and the Chrome Web Store include this license.
+
 <p align="center">
     <a href="https://addons.mozilla.org/firefox/addon/copy-link-as/">
         <img src="../firefox.png" alt="Get the Firefox Add-On" title="Get 'Copy Link As' Add-on" width="200px">
