@@ -17,7 +17,7 @@ cp -r "$SOURCE_PATH"/. "$BUILD_PATH"
 if [ -d "${GIT_ROOT_PATH}/chrome/${EXTENSION_SHORT}" ]; then
     cp -r "${GIT_ROOT_PATH}/chrome/${EXTENSION_SHORT}"/. "$BUILD_PATH"
 fi
-rm -rf "${BUILD_PATH}/screenshots" "${BUILD_PATH}/README.md" "${BUILD_PATH}"/icons/*.kra
+rm -rf "${BUILD_PATH}/screenshots" "${BUILD_PATH}/README.md" "${BUILD_PATH}"/icons/*.kra "${BUILD_PATH}/icons/src"
 
 # Chrome differences:
 # - no gecko settings
