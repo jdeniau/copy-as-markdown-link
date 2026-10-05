@@ -50,6 +50,21 @@ button {
     cursor: pointer;
 }
 
+#context-menus label:has(input:disabled) {
+    opacity: 0.5;
+    cursor: default;
+}
+
+#default-action {
+    background-color: #464347;
+    border: none;
+    padding: 10px 16px;
+    color: #ffffff;
+    font-size: 18px;
+    border-radius: 5px;
+    margin: 0 18px;
+}
+
 .remove-rule-button {
     color: #ff0000;
     cursor: pointer;

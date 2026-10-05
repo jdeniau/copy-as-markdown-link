@@ -26,10 +26,25 @@ const LINK_CONTEXT_MENUS = {
 };
 
 const ACTION_CONTEXT_MENUS = {
-    "copy-jira-link-context-menu": { title: "Copy as Jira Link" },
-    "copy-html-link-context-menu": { title: "Copy as HTML Link" },
-    "copy-rich-text-link-context-menu": { title: "Copy as Rich Text Link" }
+    "copy-markdown-link-context-menu": { type: "markdown", title: "Copy as Markdown Link" },
+    "copy-jira-link-context-menu": { type: "jira", title: "Copy as Jira Link" },
+    "copy-html-link-context-menu": { type: "html", title: "Copy as HTML Link" },
+    "copy-rich-text-link-context-menu": { type: "rich", title: "Copy as Rich Text Link" }
 };
+
+// Type of link copied when clicking the extension icon (`defaultAction` storage key)
+const DEFAULT_ACTION = "markdown";
+
+async function getDefaultAction() {
+    const { defaultAction = DEFAULT_ACTION } = await browser.storage.sync.get("defaultAction");
+    return defaultAction;
+}
+
+async function updateActionTitle() {
+    const defaultAction = await getDefaultAction();
+    const menu = Object.values(ACTION_CONTEXT_MENUS).find(menu => menu.type === defaultAction);
+    browser.action.setTitle({ title: menu?.title ?? "Copy Link As" });
+}
 
 // Menus are enabled unless explicitly disabled in the options (`contextMenus` storage key)
 async function createContextMenus() {
@@ -37,9 +52,11 @@ async function createContextMenus() {
     await browser.contextMenus.removeAll();
     const { contextMenus = {} } = await browser.storage.sync.get("contextMenus");
     const isEnabled = id => contextMenus[id] !== false;
+    const defaultAction = await getDefaultAction();
 
     for (const [id, menu] of Object.entries(ACTION_CONTEXT_MENUS)) {
-        if (!isEnabled(id)) continue;
+        // The default action is already triggered by clicking the icon
+        if (menu.type === defaultAction || !isEnabled(id)) continue;
         browser.contextMenus.create({
             id: id,
             title: menu.title,
@@ -68,10 +85,17 @@ async function createContextMenus() {
 
 // Queue rebuilds so that concurrent calls do not create duplicate ids
 let contextMenusUpdate = createContextMenus();
+updateActionTitle();
 
 browser.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === "sync" && changes.contextMenus) {
+    if (areaName !== "sync") {
+        return;
+    }
+    if (changes.contextMenus || changes.defaultAction) {
         contextMenusUpdate = contextMenusUpdate.catch(() => {}).then(createContextMenus);
+    }
+    if (changes.defaultAction) {
+        updateActionTitle();
     }
 });
 
@@ -324,20 +348,8 @@ browser.commands.onCommand.addListener(function (command) {
     }
 });
 
-browser.contextMenus.onClicked.addListener(function (info) {
-    if (info.menuItemId === "copy-jira-link-context-menu") {
-        createLink("jira");
-    }
-});
-
 browser.commands.onCommand.addListener(function (command) {
     if (command === "copy-html-link") {
-        createLink("html");
-    }
-});
-
-browser.contextMenus.onClicked.addListener(function (info) {
-    if (info.menuItemId === "copy-html-link-context-menu") {
         createLink("html");
     }
 });
@@ -349,8 +361,9 @@ browser.commands.onCommand.addListener(function (command) {
 });
 
 browser.contextMenus.onClicked.addListener(function (info) {
-    if (info.menuItemId === "copy-rich-text-link-context-menu") {
-        createLink("rich");
+    const menu = ACTION_CONTEXT_MENUS[info.menuItemId];
+    if (menu) {
+        createLink(menu.type);
     }
 });
 
@@ -361,7 +374,9 @@ browser.contextMenus.onClicked.addListener(function (info, tab) {
     }
 });
 
-browser.action.onClicked.addListener(createLink);
+browser.action.onClicked.addListener(async function () {
+    createLink(await getDefaultAction());
+});
 
 // Chrome has no theme API nor matchMedia in its service worker, see chrome/caml/service-worker.js
 if (browser.theme) {

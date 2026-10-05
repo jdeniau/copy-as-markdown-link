@@ -45,15 +45,27 @@
 
         <button id="add-rule">Add Rule</button>
 
+        <h2>Main Action</h2>
+        <p>
+            Choose which link is copied when clicking the extension icon. It is not displayed in the extension icon context menu.
+        </p>
+        <select id="default-action">
+            <option value="markdown">Copy as Markdown Link</option>
+            <option value="jira">Copy as Jira Link</option>
+            <option value="html">Copy as HTML Link</option>
+            <option value="rich">Copy as Rich Text Link</option>
+        </select>
+
         <h2>Context Menus</h2>
         <p>
             Choose which items are displayed in the context menus.
         </p>
         <div id="context-menus">
             <h3>Right-click on the extension icon</h3>
-            <label><input type="checkbox" data-menu-id="copy-jira-link-context-menu" /> Copy as Jira Link</label>
-            <label><input type="checkbox" data-menu-id="copy-html-link-context-menu" /> Copy as HTML Link</label>
-            <label><input type="checkbox" data-menu-id="copy-rich-text-link-context-menu" /> Copy as Rich Text Link</label>
+            <label><input type="checkbox" data-menu-id="copy-markdown-link-context-menu" data-action="markdown" /> Copy as Markdown Link</label>
+            <label><input type="checkbox" data-menu-id="copy-jira-link-context-menu" data-action="jira" /> Copy as Jira Link</label>
+            <label><input type="checkbox" data-menu-id="copy-html-link-context-menu" data-action="html" /> Copy as HTML Link</label>
+            <label><input type="checkbox" data-menu-id="copy-rich-text-link-context-menu" data-action="rich" /> Copy as Rich Text Link</label>
             <h3>Right-click on a link in the page ("Copy Link As")</h3>
             <label><input type="checkbox" data-menu-id="copy-link-markdown-context-menu" /> Markdown Link</label>
             <label><input type="checkbox" data-menu-id="copy-link-jira-context-menu" /> Jira Link</label>
