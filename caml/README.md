@@ -4,7 +4,7 @@
   <img src="icons/icon.png" alt="Copy Link As logo" width="128" height="128">
 </p>
 
-Firefox Extension to copy the current tab's URL and title as a Markdown/Jira/HTML/rich text link to the clipboard.
+Firefox (and Chrome) Extension to copy the current tab's URL and title as a Markdown/Jira/HTML/rich text link to the clipboard.
 
 It is a fork of [Copy as Markdown Link](https://github.com/JayBeeDe/firefox_extensions/tree/main/caml) by JayBeeDe.
 
@@ -64,6 +64,10 @@ You can also set a "Link Prefix": it is added before the link, outside of it. Fo
 - `{{title}}`: original title
 - `{{url}}`: url without anchor
 - `{{selection}}`: selected text or empty string if nothing selected
+
+### Chrome
+
+The Chrome version works the same way, except for the default keyboard shortcuts: Chrome forbids `Ctrl+Alt` shortcuts, so they are `Alt+Shift+M` (Markdown), `Alt+Shift+J` (Jira), `Alt+Shift+H` (HTML) and `Alt+Shift+K` (rich text). They can be changed in `chrome://extensions/shortcuts`.
 
 ### Secondary Actions
 
