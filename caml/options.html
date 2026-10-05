@@ -3,95 +3,119 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Options</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Copy Link As Options</title>
     <link rel="stylesheet" href="options.css" />
 </head>
 
 <body>
-    <div id="app">
-        <h2>Options</h2>
-        <p>
-            By default the title remains the title of the website, but you can customize per website some regex to transform the title within the markdown link.
-        </p>
-        <p>
-            If some URL matches "URL Match Regexp" and its title matches "Title Match Regexp", the title will go through the replacing process with the corresponding replacement config "Title Replacement Output Pattern".
-        </p>
-        <p>
-            In case the information you want is missing from the original title, you can change the default "Input Pattern" containing the title (default value is <code>{{title}}</code>) to additional data such as the url and the selected text.
-        </p>
-        <p>
-            Optionally, "Link Prefix" is added before the link (e.g. a Slack emoji like <code>:github:</code>).
-        </p>
-        <p>
-            For "Input Pattern", "Title Replacement Output Pattern" and "Link Prefix" values, you  can use pattern variables such as:
-            <code>
-                {{title}}
-                {{url}}
-                {{selection}}
-            </code>
-        </p><br />
+    <header class="page-header">
+        <img src="icons/icon-128.png" alt="" width="40" height="40" />
+        <h1>Copy Link As</h1>
+    </header>
 
-        <div class="rule-header">
-            <span>URL Match Regexp</span>
-            <span>Input Pattern</span>
-            <span>Title Match Regexp</span>
-            <span>Title Replacement Output Pattern</span>
-            <span>Link Prefix</span>
-        </div>
+    <main id="app">
+        <section class="card">
+            <h2>Main Action</h2>
+            <p class="hint">
+                Link copied when clicking the extension icon. It is not repeated in the extension icon context menu.
+            </p>
+            <select id="default-action" aria-label="Main action">
+                <option value="markdown">Copy as Markdown Link</option>
+                <option value="jira">Copy as Jira Link</option>
+                <option value="html">Copy as HTML Link</option>
+                <option value="rich">Copy as Rich Text Link</option>
+            </select>
+        </section>
 
-        <div id="rules-container">
-            <!-- Rules will be dynamically added here -->
-        </div>
+        <section class="card">
+            <h2>Context Menus</h2>
+            <p class="hint">Items displayed in the context menus.</p>
+            <div id="context-menus" class="menu-groups">
+                <fieldset>
+                    <legend>Right-click on the extension icon</legend>
+                    <label><input type="checkbox" data-menu-id="copy-markdown-link-context-menu" data-action="markdown" /> Copy as Markdown Link</label>
+                    <label><input type="checkbox" data-menu-id="copy-jira-link-context-menu" data-action="jira" /> Copy as Jira Link</label>
+                    <label><input type="checkbox" data-menu-id="copy-html-link-context-menu" data-action="html" /> Copy as HTML Link</label>
+                    <label><input type="checkbox" data-menu-id="copy-rich-text-link-context-menu" data-action="rich" /> Copy as Rich Text Link</label>
+                </fieldset>
+                <fieldset>
+                    <legend>Right-click on a link in the page ("Copy Link As")</legend>
+                    <label><input type="checkbox" data-menu-id="copy-link-markdown-context-menu" /> Markdown Link</label>
+                    <label><input type="checkbox" data-menu-id="copy-link-jira-context-menu" /> Jira Link</label>
+                    <label><input type="checkbox" data-menu-id="copy-link-html-context-menu" /> HTML Link</label>
+                    <label><input type="checkbox" data-menu-id="copy-link-rich-text-context-menu" /> Rich Text Link</label>
+                </fieldset>
+            </div>
+        </section>
 
-        <button id="add-rule">Add Rule</button>
+        <section class="card">
+            <h2>Title Rules</h2>
+            <p class="hint">
+                By default the link text is the page title. Rules transform it per website: the first rule whose
+                URL regexp matches the URL and whose title regexp matches the input pattern is applied.
+            </p>
+            <details class="help">
+                <summary>How rules work</summary>
+                <dl>
+                    <dt>URL regexp</dt>
+                    <dd>The rule only applies to URLs matching this regular expression.</dd>
+                    <dt>Input pattern</dt>
+                    <dd>Text the title regexp is matched against. Default is <code>{{title}}</code>, use the variables below to add the URL or the selected text.</dd>
+                    <dt>Title regexp</dt>
+                    <dd>Regular expression matched against the input pattern.</dd>
+                    <dt>Replacement</dt>
+                    <dd>New link text, can reference the regexp groups (<code>$1</code>, <code>$2</code>…).</dd>
+                    <dt>Prefix</dt>
+                    <dd>Optional text added before the link, e.g. a Slack emoji like <code>:github:</code>.</dd>
+                </dl>
+                <p>
+                    Input pattern, replacement and prefix accept the variables
+                    <code>{{title}}</code>, <code>{{url}}</code> and <code>{{selection}}</code>.
+                </p>
+            </details>
 
-        <h2>Main Action</h2>
-        <p>
-            Choose which link is copied when clicking the extension icon. It is not displayed in the extension icon context menu.
-        </p>
-        <select id="default-action">
-            <option value="markdown">Copy as Markdown Link</option>
-            <option value="jira">Copy as Jira Link</option>
-            <option value="html">Copy as HTML Link</option>
-            <option value="rich">Copy as Rich Text Link</option>
-        </select>
+            <div class="rules">
+                <div class="rule-header" aria-hidden="true">
+                    <span>URL regexp</span>
+                    <span>Input pattern</span>
+                    <span>Title regexp</span>
+                    <span>Replacement</span>
+                    <span>Prefix</span>
+                    <span></span>
+                </div>
+                <!-- Rules are added by options.js, no whitespace so that :empty shows the empty state -->
+                <div id="rules-container"></div>
+                <p class="empty-rules">No rule yet: links use the page title.</p>
+            </div>
 
-        <h2>Context Menus</h2>
-        <p>
-            Choose which items are displayed in the context menus.
-        </p>
-        <div id="context-menus">
-            <h3>Right-click on the extension icon</h3>
-            <label><input type="checkbox" data-menu-id="copy-markdown-link-context-menu" data-action="markdown" /> Copy as Markdown Link</label>
-            <label><input type="checkbox" data-menu-id="copy-jira-link-context-menu" data-action="jira" /> Copy as Jira Link</label>
-            <label><input type="checkbox" data-menu-id="copy-html-link-context-menu" data-action="html" /> Copy as HTML Link</label>
-            <label><input type="checkbox" data-menu-id="copy-rich-text-link-context-menu" data-action="rich" /> Copy as Rich Text Link</label>
-            <h3>Right-click on a link in the page ("Copy Link As")</h3>
-            <label><input type="checkbox" data-menu-id="copy-link-markdown-context-menu" /> Markdown Link</label>
-            <label><input type="checkbox" data-menu-id="copy-link-jira-context-menu" /> Jira Link</label>
-            <label><input type="checkbox" data-menu-id="copy-link-html-context-menu" /> HTML Link</label>
-            <label><input type="checkbox" data-menu-id="copy-link-rich-text-context-menu" /> Rich Text Link</label>
-        </div>
+            <button id="add-rule" class="secondary">+ Add Rule</button>
+        </section>
 
+        <section class="card">
+            <h2>Backup</h2>
+            <p class="hint">Export the saved options to a JSON file, or import them from one.</p>
+            <div class="button-row">
+                <button id="export-options" class="secondary">Export Options</button>
+                <button id="import-options" class="secondary">Import Options</button>
+                <input id="import-options-browse" type="file" class="hidden" accept=".json" />
+            </div>
+        </section>
+    </main>
+
+    <footer class="save-bar">
+        <span id="status" role="status"></span>
         <button id="save-options">Save Options</button>
-        <button id="import-options">Import Options</button>
-        <input id="import-options-browse" type="file" class="hidden" accept=".json" id="import-options"></button>
-        <button id="export-options">Export Options</button>
+    </footer>
 
-        <span id="saved-ok" class="status-ok">Options saved</span>
-        <span id="exported-ok" class="status-ok">Options exported to file</span>
-        <span id="exported-error" class="status-error">An error has occurred while exporting to file</span>
-        <span id="imported-ok" class="status-ok">Options imported from file</span>
-        <span id="imported-error" class="status-error">An error has occurred while importing file</span>
-    </div>
     <template id="rule-template">
         <div class="rule-row">
-            <input placeholder="URL Match Regexp" class="url" />
-            <input placeholder="Input Pattern" class="pattern" />
-            <input placeholder="Title Match Regexp" class="search" />
-            <input placeholder="Title Replacement Output Pattern" class="replace" />
-            <input placeholder="Link Prefix" class="prefix" />
-            <span class="remove-rule-button" title="Remove Rule">✗</span>
+            <label class="field"><span class="field-label">URL regexp</span><input placeholder="github\.com" class="url" /></label>
+            <label class="field"><span class="field-label">Input pattern</span><input placeholder="{{title}}" class="pattern" /></label>
+            <label class="field"><span class="field-label">Title regexp</span><input placeholder="(.+) · GitHub" class="search" /></label>
+            <label class="field"><span class="field-label">Replacement</span><input placeholder="$1" class="replace" /></label>
+            <label class="field"><span class="field-label">Prefix</span><input placeholder=":github:" class="prefix" /></label>
+            <button class="remove-rule-button" title="Remove Rule" aria-label="Remove Rule">✕</button>
         </div>
     </template>
 
