@@ -52,21 +52,21 @@ Which outputs: [#220522](https://bugzilla.kernel.org/show_bug.cgi?id=220522).
 
 To do that, open the extension preferences page and add the following rule:
 
-- URL Match Regexp: `https://bugzilla\.kernel\.org/show_bug\.cgi.*`
-- Input Pattern: `{{title}}` (default value)
-- Title Match Regexp: `(\d+)( – .+)`
-- Title Replacement Output Pattern: `#$1`
+- URL regexp: `https://bugzilla\.kernel\.org/show_bug\.cgi.*`
+- Input pattern: `{{title}}` (default value)
+- Title regexp: `(\d+)( – .+)`
+- Replacement: `#$1`
 
 ![Options page](screenshots/options.png)
 
 Do not forget to click "Save Options" button and go back to the <https://bugzilla.kernel.org/show_bug.cgi?id=220522> page.
 Trigger the extension action.
 
-If you need additional informations that are not part of the original title but are part of the original url or selected text, you can customize the "Input Pattern" rule option.
+If you need additional informations that are not part of the original title but are part of the original url or selected text, you can customize the "Input pattern" rule option.
 
-You can also set a "Link Prefix": it is added before the link, outside of it. For example with `:github:`, the copied markdown link is `:github: [#220522](https://bugzilla.kernel.org/show_bug.cgi?id=220522)`.
+You can also set a "Prefix": it is added before the link, outside of it. For example with `:github:`, the copied markdown link is `:github: [#220522](https://bugzilla.kernel.org/show_bug.cgi?id=220522)`.
 
-"Input Pattern", "Title Replacement Output Pattern" and "Link Prefix" fields support the following variables:
+"Input pattern", "Replacement" and "Prefix" fields support the following variables:
 
 - `{{title}}`: original title
 - `{{url}}`: url without anchor

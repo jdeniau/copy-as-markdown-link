@@ -17,8 +17,11 @@ const rulesContainer = document.querySelector("#rules-container");
 const ruleTemplate = document.querySelector("#rule-template");
 const contextMenuCheckboxes = document.querySelectorAll("#context-menus input[data-menu-id]");
 const defaultActionSelect = document.querySelector("#default-action");
+const statusElement = document.querySelector("#status");
+let statusTimeout = null;
 
 defaultActionSelect.addEventListener("change", updateActionCheckboxes);
+document.querySelector("#app").addEventListener("input", () => showStatus("Unsaved changes", "", false));
 
 function replaceAll(str, charToReplace, replacementChar) {
     const regex = new RegExp(charToReplace, 'g'); // 'g' flag for global replacement
@@ -55,6 +58,8 @@ function addRule() {
     const newRuleElement = createRuleElement();
     rulesContainer.appendChild(newRuleElement);
     reindexRules(); // Update indices after adding
+    newRuleElement.querySelector(".url").focus();
+    showStatus("Unsaved changes", "", false);
 }
 
 function createRuleElement(ruleData = { pattern: "{{title}}", url: "", search: "", replace: "", prefix: "" }) {
@@ -66,7 +71,8 @@ function createRuleElement(ruleData = { pattern: "{{title}}", url: "", search: "
     ruleNode.querySelector(".replace").value = ruleData.replace;
     ruleNode.querySelector(".prefix").value = ruleData.prefix || "";
     ruleNode.querySelector(".remove-rule-button").addEventListener("click", () => removeRule(ruleDiv));
-    return ruleNode;
+    // Only the row: the template whitespace would prevent `#rules-container:empty` from showing the empty state
+    return ruleDiv;
 }
 
 function removeRule(ruleDiv) {
@@ -82,11 +88,17 @@ function reindexRules() {
     });
 }
 
-function alert(id) {
-    document.querySelector("#" + id).style.display = "block";
-    setTimeout(() => {
-        document.querySelector("#" + id).style.display = "none";
-    }, 2000);
+// type: "ok", "error" or "" (neutral). Temporary messages are cleared after a few seconds.
+function showStatus(message, type = "ok", temporary = true) {
+    clearTimeout(statusTimeout);
+    statusElement.textContent = message;
+    statusElement.className = type;
+    if (temporary) {
+        statusTimeout = setTimeout(() => {
+            statusElement.textContent = "";
+            statusElement.className = "";
+        }, 3000);
+    }
 }
 
 function saveOptions() {
@@ -113,7 +125,9 @@ function saveOptions() {
         contextMenus: contextMenus,
         defaultAction: defaultActionSelect.value
     }).then(() => {
-        alert("saved-ok");
+        showStatus("Options saved");
+    }).catch(error => {
+        showStatus(`Options not saved: ${error.message}`, "error");
     });
 }
 
@@ -123,11 +137,13 @@ async function importOptions(file) {
     if (!file.files[0]) return;
     try {
         const settings = JSON.parse(await file.files[0].text());
-        browser.storage.sync.set(settings);
-        alert("imported-ok");
+        await browser.storage.sync.set(settings);
         loadOptions();
+        showStatus("Options imported from file");
     } catch (error) {
-        alert("imported-error", error);
+        showStatus(`Import failed: ${error.message}`, "error");
+    } finally {
+        file.value = ""; // allows importing the same file again
     }
 }
 
@@ -147,9 +163,9 @@ function exportOptions() {
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                alert("exported-ok", exportFileName);
+                showStatus(`Options exported to ${exportFileName}`);
             } catch (error) {
-                alert("exported-error", error);
+                showStatus(`Export failed: ${error.message}`, "error");
             }
         }
     );
