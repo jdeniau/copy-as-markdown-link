@@ -15,6 +15,10 @@ document.querySelector("#export-options").addEventListener("click", exportOption
 
 const rulesContainer = document.querySelector("#rules-container");
 const ruleTemplate = document.querySelector("#rule-template");
+const contextMenuCheckboxes = document.querySelectorAll("#context-menus input[data-menu-id]");
+const defaultActionSelect = document.querySelector("#default-action");
+
+defaultActionSelect.addEventListener("change", updateActionCheckboxes);
 
 function replaceAll(str, charToReplace, replacementChar) {
     const regex = new RegExp(charToReplace, 'g'); // 'g' flag for global replacement
@@ -24,12 +28,26 @@ function replaceAll(str, charToReplace, replacementChar) {
 function loadOptions() {
     rulesContainer.innerHTML = ""; // reset container 
     browser.storage.sync.get({
-        rules: [] // Default to an empty array if no rules are stored
+        rules: [], // Default to an empty array if no rules are stored
+        contextMenus: {}, // Menus are enabled unless explicitly disabled
+        defaultAction: "markdown"
     }).then(result => {
         result.rules.forEach((rule, index) => {
             const ruleElement = createRuleElement(rule, index);
             rulesContainer.appendChild(ruleElement);
         });
+        contextMenuCheckboxes.forEach(checkbox => {
+            checkbox.checked = result.contextMenus[checkbox.dataset.menuId] !== false;
+        });
+        defaultActionSelect.value = result.defaultAction;
+        updateActionCheckboxes();
+    });
+}
+
+// The default action is never displayed in the extension icon context menu
+function updateActionCheckboxes() {
+    contextMenuCheckboxes.forEach(checkbox => {
+        checkbox.disabled = checkbox.dataset.action === defaultActionSelect.value;
     });
 }
 
@@ -85,8 +103,15 @@ function saveOptions() {
         rules.push({ pattern: pattern, url: url, search: search, replace: replace, prefix: prefix });
     });
 
+    const contextMenus = {};
+    contextMenuCheckboxes.forEach(checkbox => {
+        contextMenus[checkbox.dataset.menuId] = checkbox.checked;
+    });
+
     browser.storage.sync.set({
-        rules: rules
+        rules: rules,
+        contextMenus: contextMenus,
+        defaultAction: defaultActionSelect.value
     }).then(() => {
         alert("saved-ok");
     });
@@ -108,7 +133,9 @@ async function importOptions(file) {
 
 function exportOptions() {
     browser.storage.sync.get({
-        rules: []
+        rules: [],
+        contextMenus: {},
+        defaultAction: "markdown"
     }).then(
         results => {
             try {
