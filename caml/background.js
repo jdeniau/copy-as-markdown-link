@@ -102,53 +102,63 @@ browser.storage.onChanged.addListener((changes, areaName) => {
     }
 });
 
-function rgbToHex(color) {
-    let r = null, g = null, b = null;
-    if (color !== null && color.startsWith("#")) {
-        r = parseInt(color.substring(1, 3), 16);
-        g = parseInt(color.substring(3, 5), 16);
-        b = parseInt(color.substring(5, 7), 16);
-    } else if (color !== null && color.startsWith("rgb")) {
-        const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)/);
-        if (match) {
-            r = parseInt(match[1], 10);
-            g = parseInt(match[2], 10);
-            b = parseInt(match[3], 10);
-        }
+let colorContext = null;
+
+// Theme colors are any CSS color ("#000", "white", "rgb(...)"...) or an [r, g, b] array.
+// Returns { luminance (0-255), opaque }, or null when the color is missing or invalid.
+function parseThemeColor(color) {
+    if (Array.isArray(color)) {
+        color = `rgb(${color.join(",")})`;
     }
-    return {
-        r: r,
-        g: g,
-        b: b
-    };
+    if (typeof color !== "string") {
+        return null;
+    }
+    // Painting a pixel lets the browser parse every CSS color syntax
+    colorContext ??= new OffscreenCanvas(1, 1).getContext("2d", { willReadFrequently: true });
+    colorContext.clearRect(0, 0, 1, 1);
+    colorContext.fillStyle = "transparent";
+    colorContext.fillStyle = color;
+    colorContext.fillRect(0, 0, 1, 1);
+    const [r, g, b, alpha] = colorContext.getImageData(0, 0, 1, 1).data;
+    return alpha === 0 ? null : { luminance: 0.299 * r + 0.587 * g + 0.114 * b, opaque: alpha === 255 };
+}
+
+const prefersDark = () => window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+// Same order as Firefox to pick the toolbar color scheme (LightweightThemeConsumer.sys.mjs).
+function isDarkThemeDetails(details) {
+    // theme.getCurrent() always returns the manifest `theme`, never the `dark_theme` variant applied
+    // when the OS is dark (bug 1435216). Both variants usually declare a color_scheme, which Firefox
+    // forwards to prefers-color-scheme for the applied variant.
+    const colorScheme = details?.properties?.color_scheme;
+    if (colorScheme === "light" || colorScheme === "dark") {
+        return prefersDark();
+    }
+    const colors = details?.colors;
+    const toolbar = parseThemeColor(colors?.toolbar);
+    if (toolbar?.opaque) {
+        return toolbar.luminance < darknessThreshold;
+    }
+    const toolbarText = parseThemeColor(colors?.toolbar_text ?? colors?.tab_background_text);
+    if (toolbarText) {
+        return toolbarText.luminance >= darknessThreshold;
+    }
+    const frame = parseThemeColor(colors?.frame);
+    if (frame) {
+        return frame.luminance < darknessThreshold;
+    }
+    // Default theme, or theme without colors: the toolbar follows the OS color scheme
+    return prefersDark();
 }
 
 async function isDarkTheme() {
     try {
         // Wait for a short delay to allow theme to initialize
         await new Promise(resolve => setTimeout(resolve, 50));
-        const themeInfo = await browser.theme.getCurrent();
-        // Check if theme information is incomplete (likely the default theme)
-        if (themeInfo && themeInfo.colors === null && themeInfo.images === null && themeInfo.properties === null) {
-            // User is likely using the default theme. Check OS dark mode.
-            isDarkThemeStatus = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            setIcon();
-            return;
-        }
-        // If a specific theme is set, proceed with color analysis as before
-        const { r, g, b } = rgbToHex(themeInfo?.colors?.toolbar);
-        if (r === null || g === null || b === null) {
-            console.warn("Theme information incomplete, assuming light theme!");
-            isDarkThemeStatus = false;
-        }
-        else {
-            // Color parsing and luminance calculation
-            const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-            isDarkThemeStatus = luminance < darknessThreshold;
-        }
+        isDarkThemeStatus = isDarkThemeDetails(await browser.theme.getCurrent());
     } catch (error) {
-        console.warn("Error getting theme information:", error, "Assuming light theme!");
-        isDarkThemeStatus = false;
+        console.warn("Error getting theme information:", error);
+        isDarkThemeStatus = prefersDark();
     }
     setIcon();
 }
